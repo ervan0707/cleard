@@ -92,18 +92,56 @@ cleard -x .git -x dist # skip directories by name
 
 ## Config
 
-Optional, at `~/.config/cleard/config.toml`:
+Optional, at `~/.config/cleard/config.toml` (or pass `--config <path>`). Use it to
+add your own detection rules, or to replace the built-in catalog entirely. If the
+file doesn't exist, the built-in rules are used.
+
+Each rule has:
+
+- `ecosystem` — the label shown in the list.
+- `dir_names` — directory names to match.
+- `markers` — sibling files that must exist for a match. With markers, the dir is
+  only flagged when one sits next to it (so a hand-written `zig-out/` with no
+  `build.zig` is left alone). Omit `markers` to match the name anywhere ("safe by
+  name") — only do that for unambiguous names.
+
+`dir_names` and `markers` accept a single `*` glob (e.g. `*.csproj`, `*.egg-info`).
+Your rules are checked before the built-ins, so they win on overlapping names.
+
+Add a few ecosystems on top of the built-ins:
 
 ```toml
-# use_default_rules = true   # set false to use only the rules below
+# use_default_rules = true   # default; keep the built-in catalog
 
 [[rules]]
 ecosystem = "Zig"
 dir_names = ["zig-cache", "zig-out"]
-markers = ["build.zig"]      # omit for a "safe by name" rule
+markers = ["build.zig"]
+
+[[rules]]
+ecosystem = "Bazel"
+dir_names = ["bazel-bin", "bazel-out", "bazel-testlogs"]
+markers = ["WORKSPACE", "WORKSPACE.bazel", "MODULE.bazel"]
+
+[[rules]]
+ecosystem = "CMake"
+dir_names = ["CMakeFiles"]   # unambiguous name, no marker needed
 ```
 
-`dir_names` and `markers` accept a single `*` glob (e.g. `*.csproj`).
+Or replace the built-ins entirely and clean only what you list:
+
+```toml
+use_default_rules = false
+
+[[rules]]
+ecosystem = "Node"
+dir_names = ["node_modules"]
+
+[[rules]]
+ecosystem = "Rust"
+dir_names = ["target"]
+markers = ["Cargo.toml"]
+```
 
 ## Develop (Nix)
 

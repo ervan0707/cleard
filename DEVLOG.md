@@ -5,6 +5,23 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-23 — Expand the README config section
+
+### What
+
+Grew the README "Config" section from a single Zig snippet into a proper
+explainer: what the file is for, what `ecosystem`/`dir_names`/`markers` mean (and
+the safe-by-name vs marker behavior), the glob and precedence rules, plus two
+examples (adding rules on top of the built-ins, and replacing them entirely).
+
+### Why
+
+The old snippet showed the syntax but not the semantics, so it wasn't obvious
+when to use markers vs a name-only rule, or how to disable the built-in catalog.
+Docs only, no code change.
+
+---
+
 ## 2026-06-23 — Point repo URLs at ervan0707/cleard, document running from Git
 
 ### What
