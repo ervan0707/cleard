@@ -34,6 +34,13 @@ pub enum ScanMsg {
     ScanDone,
     /// All sizing has finished (no more `Sized` will arrive).
     SizingDone,
+    /// A background deletion removed this candidate (or simulated it in
+    /// dry-run); `bytes` is added to the reclaimed total.
+    Deleted { id: usize, bytes: u64 },
+    /// A background deletion failed for this candidate.
+    DeleteFailed { error: String },
+    /// The current deletion batch has finished.
+    DeleteBatchDone,
 }
 
 pub struct ScanOptions {

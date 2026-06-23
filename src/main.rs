@@ -42,11 +42,13 @@ fn main() -> Result<()> {
             excludes: args.exclude,
             follow_links: args.follow_links,
         },
-        tx,
+        tx.clone(),
     );
 
     let app = AppState::new(root, args.dry_run, args.min_size);
-    let reclaimed = tui::run(app, rx)?;
+    // `tx` is kept so the UI can spawn background deletion workers that report
+    // progress back over the same channel.
+    let reclaimed = tui::run(app, rx, tx)?;
 
     if reclaimed > 0 {
         let suffix = if args.dry_run {

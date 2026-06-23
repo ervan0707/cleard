@@ -154,7 +154,12 @@ fn draw_footer(f: &mut Frame, area: Rect, app: &AppState, mode: Mode, status: &O
         },
     ]);
 
-    let hint_line = if mode == Mode::Filter {
+    let hint_line = if app.deleting {
+        Line::from(Span::styled(
+            format!(" {} deleting… (UI stays responsive)", SPINNER[app.spinner % SPINNER.len()]),
+            Style::new().fg(Color::Yellow).bold(),
+        ))
+    } else if mode == Mode::Filter {
         Line::from(vec![
             Span::styled("/", Style::new().fg(Color::Yellow)),
             Span::raw(app.filter.clone()),

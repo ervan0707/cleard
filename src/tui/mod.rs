@@ -7,7 +7,7 @@ use std::io::{self, Stdout};
 use std::time::Duration;
 
 use anyhow::Result;
-use crossbeam_channel::Receiver;
+use crossbeam_channel::{Receiver, Sender};
 use crossterm::event::{self, Event, KeyEventKind};
 use crossterm::execute;
 use crossterm::terminal::{
@@ -24,9 +24,9 @@ use events::{Action, Mode};
 
 /// Run the full-screen UI, draining `rx` for live scan results. Returns the
 /// number of bytes reclaimed during the session.
-pub fn run(mut app: AppState, rx: Receiver<ScanMsg>) -> Result<u64> {
+pub fn run(mut app: AppState, rx: Receiver<ScanMsg>, tx: Sender<ScanMsg>) -> Result<u64> {
     let mut terminal = setup_terminal()?;
-    let result = event_loop(&mut terminal, &mut app, rx);
+    let result = event_loop(&mut terminal, &mut app, rx, tx);
     restore_terminal(&mut terminal)?;
     result?;
     Ok(app.reclaimed)
@@ -59,6 +59,7 @@ fn event_loop<B: Backend>(
     terminal: &mut Terminal<B>,
     app: &mut AppState,
     rx: Receiver<ScanMsg>,
+    tx: Sender<ScanMsg>,
 ) -> Result<()> {
     let mut mode = Mode::Normal;
     let mut table_state = TableState::default();
@@ -66,13 +67,24 @@ fn event_loop<B: Backend>(
     let mut pending: Vec<usize> = Vec::new();
 
     loop {
-        // Drain everything the scanner has produced since the last frame.
+        // Drain everything the scanner and deletion workers produced since the
+        // last frame. This is cheap and keeps the UI live during long deletes.
         for msg in rx.try_iter() {
             match msg {
                 ScanMsg::Found(c) => app.push(c),
                 ScanMsg::Sized { id, bytes, mtime } => app.set_size(id, bytes, mtime),
                 ScanMsg::ScanDone => app.scanning = false,
                 ScanMsg::SizingDone => app.sizing = false,
+                ScanMsg::Deleted { id, bytes } => {
+                    app.mark_deleted(id);
+                    app.reclaimed += bytes;
+                }
+                ScanMsg::DeleteFailed { error } => {
+                    // The directory still exists; surface the error and leave
+                    // the row in place so it can be retried.
+                    status = Some(error);
+                }
+                ScanMsg::DeleteBatchDone => app.deleting = false,
             }
         }
         app.clamp_cursor();
@@ -85,7 +97,7 @@ fn event_loop<B: Backend>(
             if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     let action = events::map(mode, key);
-                    if handle(action, app, &mut mode, &mut status, &mut pending) {
+                    if handle(action, app, &mut mode, &mut status, &mut pending, &tx) {
                         break;
                     }
                 }
@@ -104,6 +116,7 @@ fn handle(
     mode: &mut Mode,
     status: &mut Option<String>,
     pending: &mut Vec<usize>,
+    tx: &Sender<ScanMsg>,
 ) -> bool {
     *status = None;
 
@@ -132,16 +145,20 @@ fn handle(
         Action::ClearSelection => app.clear_selection(),
 
         Action::RequestDelete => {
-            let targets = app.deletion_targets();
-            if targets.is_empty() {
-                *status = Some("Nothing to delete.".into());
+            if app.deleting {
+                *status = Some("Still deleting — please wait.".into());
             } else {
-                *pending = targets;
-                *mode = Mode::Confirm;
+                let targets = app.deletion_targets();
+                if targets.is_empty() {
+                    *status = Some("Nothing to delete.".into());
+                } else {
+                    *pending = targets;
+                    *mode = Mode::Confirm;
+                }
             }
         }
         Action::ConfirmYes => {
-            perform_deletion(app, pending, status);
+            spawn_deletion(app, pending, tx);
             pending.clear();
             *mode = Mode::Normal;
         }
@@ -179,41 +196,44 @@ fn handle(
     false
 }
 
-fn perform_deletion(app: &mut AppState, pending: &[usize], status: &mut Option<String>) {
-    let root = app.root.clone();
-    let dry_run = app.dry_run;
-    let mut first_error: Option<String> = None;
+/// Delete the pending candidates on a background thread so the UI stays
+/// responsive. Each removal reports back over `tx`; the event loop applies the
+/// results (`Deleted` / `DeleteFailed`) and clears `deleting` on `DeleteBatchDone`.
+fn spawn_deletion(app: &mut AppState, pending: &[usize], tx: &Sender<ScanMsg>) {
+    // Capture stable ids (not view indices, which shift as rows are struck out).
+    let jobs: Vec<(usize, std::path::PathBuf, u64)> = pending
+        .iter()
+        .map(|&idx| app.get(idx))
+        .filter(|c| !c.deleted)
+        .map(|c| (c.id, c.path.clone(), c.size.unwrap_or(0)))
+        .collect();
 
-    for &idx in pending {
-        if app.get(idx).deleted {
-            continue;
-        }
-        let path = app.get(idx).path.clone();
-        let size = app.get(idx).size.unwrap_or(0);
-
-        let ok = if dry_run {
-            true
-        } else {
-            match delete::remove(&root, &path) {
-                Ok(()) => true,
-                Err(e) => {
-                    if first_error.is_none() {
-                        first_error = Some(format!("{}: {e}", path.display()));
-                    }
-                    false
-                }
-            }
-        };
-
-        if ok {
-            {
-                let c = app.candidate_mut(idx);
-                c.deleted = true;
-                c.selected = false;
-            }
-            app.reclaimed += size;
-        }
+    if jobs.is_empty() {
+        return;
     }
 
-    *status = first_error;
+    let root = app.root.clone();
+    let dry_run = app.dry_run;
+    let tx = tx.clone();
+    app.deleting = true;
+
+    std::thread::spawn(move || {
+        for (id, path, size) in jobs {
+            if dry_run {
+                let _ = tx.send(ScanMsg::Deleted { id, bytes: size });
+            } else {
+                match delete::remove(&root, &path) {
+                    Ok(()) => {
+                        let _ = tx.send(ScanMsg::Deleted { id, bytes: size });
+                    }
+                    Err(e) => {
+                        let _ = tx.send(ScanMsg::DeleteFailed {
+                            error: format!("{}: {e}", path.display()),
+                        });
+                    }
+                }
+            }
+        }
+        let _ = tx.send(ScanMsg::DeleteBatchDone);
+    });
 }

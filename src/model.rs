@@ -67,6 +67,8 @@ pub struct AppState {
     pub cursor: usize,
     pub scanning: bool,
     pub sizing: bool,
+    /// A background deletion batch is in progress.
+    pub deleting: bool,
     pub reclaimed: u64,
     /// Spinner animation tick.
     pub spinner: usize,
@@ -84,6 +86,7 @@ impl AppState {
             cursor: 0,
             scanning: true,
             sizing: true,
+            deleting: false,
             reclaimed: 0,
             spinner: 0,
         }
@@ -97,6 +100,15 @@ impl AppState {
         if let Some(c) = self.candidates.iter_mut().find(|c| c.id == id) {
             c.size = Some(bytes);
             c.mtime = mtime;
+        }
+    }
+
+    /// Mark a candidate (by stable id) as deleted; called as each background
+    /// removal completes.
+    pub fn mark_deleted(&mut self, id: usize) {
+        if let Some(c) = self.candidates.iter_mut().find(|c| c.id == id) {
+            c.deleted = true;
+            c.selected = false;
         }
     }
 

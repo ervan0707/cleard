@@ -5,6 +5,41 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-23 — Delete on a background thread (fix UI freeze)
+
+### What
+
+Deletion no longer blocks the UI. Pressing `d` then `y` hands the selected
+directories to a background worker thread; the event loop keeps drawing and
+reading input while rows strike out as each removal completes, and the footer
+shows a `deleting…` indicator.
+
+### Why
+
+Deletion ran synchronously on the UI thread, so confirming a large batch (the
+user hit it with ~11.87 GiB selected) called `remove_dir_all` on every target
+before the loop could redraw or read a key. The screen looked frozen for many
+seconds — it was just busy deleting, and only "came back" once the batch
+finished. Reported by the user.
+
+### How
+
+Added `ScanMsg::{Deleted, DeleteFailed, DeleteBatchDone}` and reused the existing
+scan channel. `main` keeps a `Sender` clone and passes it to `tui::run`. On
+confirm, `spawn_deletion` captures stable candidate **ids** (not view indices,
+which shift as rows are struck out) as `(id, path, size)`, sets
+`app.deleting = true`, and spawns a thread that deletes each and reports back.
+The drain loop applies `Deleted` (mark deleted + add to `reclaimed`),
+`DeleteFailed` (surface the error, leave the row so it can be retried), and
+clears `deleting` on `DeleteBatchDone`. Re-entrant delete requests are ignored
+while a batch runs.
+
+Gotcha: quitting (`q`) mid-batch detaches the worker — already-removed dirs stay
+removed; a dir caught mid-removal may be left partially deleted. Acceptable for
+now. Tests still 10/10.
+
+---
+
 ## 2026-06-23 — Initial build: scaffold, scanner, TUI, Nix packaging
 
 ### What
