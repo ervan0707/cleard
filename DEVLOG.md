@@ -5,6 +5,32 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-23 — Don't flicker unsized rows when --min-size is set
+
+### What
+
+When a `--min-size` threshold is set, directories whose size hasn't been
+computed yet are now hidden instead of shown. Without a threshold, behavior is
+unchanged (freshly found dirs still appear instantly with a `…` size).
+
+### Why
+
+The scan is a streaming pipeline: the scanner emits `Found` with `size: None`
+immediately, and the sizer pool fills in sizes later. The min-size filter used
+`size.map(|s| s >= min).unwrap_or(true)`, so unsized rows passed the filter and
+showed up, then dropped out once measured below the threshold. With a large
+threshold (e.g. `--min-size 10000M`) every row flickered in during the scan and
+then vanished, which looked like a bug. Reported by the user.
+
+### How
+
+`view_indices` (`src/model.rs`) now matches on `size`: `Some(s) => s >= min`,
+`None => min == 0`. So pending rows are shown only when there's no threshold,
+and once a threshold is active rows appear only after their size confirms they
+qualify. One-line behavior change, tests still 10/10.
+
+---
+
 ## 2026-06-23 — Delete on a background thread (fix UI freeze)
 
 ### What

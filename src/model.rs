@@ -133,7 +133,13 @@ impl AppState {
             .candidates
             .iter()
             .enumerate()
-            .filter(|(_, c)| c.size.map(|s| s >= self.min_size).unwrap_or(true))
+            // While a size is still pending (None): show it when there's no
+            // min-size filter, but hide it once a threshold is set so unsized
+            // rows don't flicker in and then drop out when measured.
+            .filter(|(_, c)| match c.size {
+                Some(s) => s >= self.min_size,
+                None => self.min_size == 0,
+            })
             .filter(|(_, c)| {
                 f.is_empty()
                     || c.path.to_string_lossy().to_lowercase().contains(&f)
