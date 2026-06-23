@@ -1,0 +1,36 @@
+[package]
+name = "cleard"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+description = "Interactive, multi-ecosystem build-artifact disk reclaimer (npkill, but for everything)"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/your/cleard"
+keywords = ["cli", "tui", "disk", "cleanup", "node_modules"]
+categories = ["command-line-utilities", "filesystem"]
+
+[[bin]]
+name = "cleard"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+crossbeam-channel = "0.5"
+crossterm = "0.28"
+dirs = "5"
+humansize = "2"
+jwalk = "0.8"
+rayon = "1"
+ratatui = "0.29"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+lto = "thin"
+strip = true
+codegen-units = 1
