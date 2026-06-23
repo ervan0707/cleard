@@ -126,6 +126,14 @@ impl AppState {
         self.view_indices().len()
     }
 
+    /// (count, total bytes) of currently selected, not-yet-deleted candidates.
+    pub fn selected_summary(&self) -> (usize, u64) {
+        self.candidates
+            .iter()
+            .filter(|c| c.selected && !c.deleted)
+            .fold((0, 0), |(n, bytes), c| (n + 1, bytes + c.size.unwrap_or(0)))
+    }
+
     /// Indices into `candidates`, ordered and filtered for display.
     pub fn view_indices(&self) -> Vec<usize> {
         let f = self.filter.to_lowercase();

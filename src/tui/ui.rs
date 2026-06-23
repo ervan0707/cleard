@@ -133,6 +133,7 @@ fn draw_table(f: &mut Frame, area: Rect, app: &AppState, table_state: &mut Table
 }
 
 fn draw_footer(f: &mut Frame, area: Rect, app: &AppState, mode: Mode, status: &Option<String>) {
+    let (sel_count, sel_bytes) = app.selected_summary();
     let stats = Line::from(vec![
         Span::styled(format!(" {} found", app.found_count()), Style::new().fg(Color::Cyan)),
         Span::raw("  "),
@@ -140,6 +141,15 @@ fn draw_footer(f: &mut Frame, area: Rect, app: &AppState, mode: Mode, status: &O
             format!("{} reclaimable", format_size(app.reclaimable(), BINARY)),
             Style::new().fg(Color::Green),
         ),
+        // Selected count + total size (shown only when something is selected).
+        if sel_count > 0 {
+            Span::styled(
+                format!("  {} selected ({})", sel_count, format_size(sel_bytes, BINARY)),
+                Style::new().fg(Color::LightRed).bold(),
+            )
+        } else {
+            Span::raw("")
+        },
         Span::raw("  "),
         Span::styled(
             format!("{} reclaimed", format_size(app.reclaimed, BINARY)),

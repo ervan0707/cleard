@@ -5,6 +5,28 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-23 — Show selected total, stop cursor auto-advancing on select
+
+### What
+
+Two UX fixes: (1) the footer now shows the selected count and their combined
+size (e.g. `3 selected (4.20 GiB)`) whenever anything is selected; (2) pressing
+space to select no longer moves the cursor down, it stays on the current row.
+
+### Why
+
+You couldn't see how much you'd picked before deleting, and the auto-advance on
+select made multi-select feel jumpy. Both reported by the user.
+
+### How
+
+Added `AppState::selected_summary()` -> `(count, bytes)` over selected,
+not-deleted candidates; `draw_footer` renders it as a span shown only when the
+count is > 0. Removed the `cursor += 1` from the `ToggleSelect` handler. Tests
+still 10/10.
+
+---
+
 ## 2026-06-23 — Expand the README config section
 
 ### What

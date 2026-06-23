@@ -141,8 +141,7 @@ fn handle(
                     app.candidate_mut(i).selected = !sel;
                 }
             }
-            app.cursor += 1;
-            app.clamp_cursor();
+            // Stay on the current row; don't auto-advance the cursor.
         }
         Action::SelectAll => app.select_all_in_view(),
         Action::ClearSelection => app.clear_selection(),
