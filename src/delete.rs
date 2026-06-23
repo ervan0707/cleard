@@ -27,6 +27,19 @@ pub fn remove(root: &Path, target: &Path) -> Result<()> {
         );
     }
 
+    // TOCTOU guard: re-check, without following links, right before removing.
+    // `target_canon` is fully resolved, so it should still be a real directory;
+    // if it was swapped for a symlink since the scan/canonicalize, bail instead
+    // of letting remove_dir_all act on the changed path.
+    let meta = std::fs::symlink_metadata(&target_canon)
+        .with_context(|| format!("re-checking {}", target.display()))?;
+    if !meta.file_type().is_dir() {
+        bail!(
+            "refusing to delete {}: it is no longer a directory (changed since scan)",
+            target.display()
+        );
+    }
+
     std::fs::remove_dir_all(&target_canon)
         .with_context(|| format!("deleting {}", target.display()))?;
     Ok(())

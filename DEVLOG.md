@@ -5,6 +5,53 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-23 — Security review hardening
+
+### What
+
+Acted on a security review of the codebase (a tool that does irreversible
+deletes). No High/Critical issues were found; these are the hardening changes:
+
+- **ratatui 0.29 -> 0.30.** Clears both `cargo audit` warnings (`paste`
+  unmaintained RUSTSEC-2024-0436, `lru` unsound RUSTSEC-2026-0002), which both
+  came in transitively through ratatui. Audit is now clean (0 vulns, 0 warnings).
+- **Shallow-root guard** (`main.rs`). Before scanning, if the canonical root is
+  `/`, `$HOME`, or a top-level dir (<= 2 path components), print a warning and
+  require a y/N confirmation. EOF or an unreadable stdin fails safe (aborts).
+- **TOCTOU guard** (`delete.rs`). Right before `remove_dir_all`, `symlink_metadata`
+  the resolved target and bail if it is no longer a real directory (caught being
+  swapped for a symlink since the scan).
+- **Terminal-escape safety.** Startup error paths now print with `{:?}` so a dir
+  name containing control/escape sequences can't be injected into the terminal.
+- **cargo-audit wired in.** Added to the dev shell and a GitHub Actions CI
+  workflow (build + test + audit on push/PR).
+
+### Why
+
+Deletion is irreversible, so the threat model is "delete something unintended."
+The existing guards (canonicalize + component-wise `starts_with` containment,
+`follow_links=false` default, mandatory confirm) were already solid. These add
+defense in depth: a smaller blast radius on broad roots, a narrower TOCTOU
+window, no terminal-injection surface on printed paths, and automated CVE
+scanning so transitive advisories surface in CI.
+
+### How / gotchas
+
+- ratatui 0.30 made `Backend::Error` an associated type that is not Send/Sync,
+  so `terminal.draw(...)?` / `show_cursor()?` no longer convert into
+  `anyhow::Error` from a generic `B: Backend`. Fixed by making `event_loop` and
+  `restore_terminal` concrete over `Terminal<CrosstermBackend<Stdout>>` (error is
+  `io::Error`, which is Send + Sync).
+- Dropped the direct `crossterm` dependency; the TUI now uses
+  `ratatui::crossterm` so there's only one crossterm version in the tree.
+- Dep count grew (131 -> 227 crates) because ratatui 0.30 is split into several
+  sub-crates. Audit stays clean.
+- Verified: build clean, 10/10 tests pass, `cargo audit` clean, normal fixture
+  delete still works (TOCTOU re-check doesn't break the happy path), and the
+  guard aborts safely on `/` with non-interactive stdin.
+
+---
+
 ## 2026-06-23 — Don't flicker unsized rows when --min-size is set
 
 ### What

@@ -8,12 +8,12 @@ use std::time::Duration;
 
 use anyhow::Result;
 use crossbeam_channel::{Receiver, Sender};
-use crossterm::event::{self, Event, KeyEventKind};
-use crossterm::execute;
-use crossterm::terminal::{
+use ratatui::crossterm::event::{self, Event, KeyEventKind};
+use ratatui::crossterm::execute;
+use ratatui::crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
-use ratatui::backend::{Backend, CrosstermBackend};
+use ratatui::backend::CrosstermBackend;
 use ratatui::widgets::TableState;
 use ratatui::Terminal;
 
@@ -48,15 +48,18 @@ fn setup_terminal() -> Result<Terminal<CrosstermBackend<Stdout>>> {
     Ok(Terminal::new(CrosstermBackend::new(stdout))?)
 }
 
-fn restore_terminal<B: Backend + io::Write>(terminal: &mut Terminal<B>) -> Result<()> {
+fn restore_terminal(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
     terminal.show_cursor()?;
     Ok(())
 }
 
-fn event_loop<B: Backend>(
-    terminal: &mut Terminal<B>,
+// Concrete over CrosstermBackend so `terminal.draw(...)?` yields an io::Error
+// (Send + Sync), which anyhow can convert. ratatui 0.30's Backend::Error
+// associated type is not Send/Sync, so a generic `B: Backend` won't compile here.
+fn event_loop(
+    terminal: &mut Terminal<CrosstermBackend<Stdout>>,
     app: &mut AppState,
     rx: Receiver<ScanMsg>,
     tx: Sender<ScanMsg>,

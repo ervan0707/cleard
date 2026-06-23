@@ -51,10 +51,11 @@
           packages = [
             rustToolchain
             pkgs.rust-analyzer
+            pkgs.cargo-audit # `cargo audit` for dependency CVE scanning
           ];
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
           shellHook = ''
-            echo "cleard dev shell — run: cargo run -- <path>"
+            echo "cleard dev shell — run: cargo run -- <path>  |  audit: cargo audit"
           '';
         };
       });

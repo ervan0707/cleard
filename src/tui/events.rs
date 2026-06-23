@@ -1,6 +1,6 @@
 //! Mapping raw key events to high-level UI actions, per interaction mode.
 
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
