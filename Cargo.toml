@@ -6,7 +6,7 @@ rust-version = "1.90"
 description = "Interactive, multi-ecosystem build-artifact disk reclaimer (npkill, but for everything)"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/your/cleard"
+repository = "https://github.com/ervan0707/cleard"
 keywords = ["cli", "tui", "disk", "cleanup", "node_modules"]
 categories = ["command-line-utilities", "filesystem"]
 

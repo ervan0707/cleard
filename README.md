@@ -26,6 +26,45 @@ Go & PHP (`vendor`), .NET (`bin`, `obj`), CocoaPods (`Pods`), Terraform
 (`.terraform`), Elixir (`_build`, `deps`), Elm (`elm-stuff`), Dart/Flutter
 (`.dart_tool`). Extendable via config.
 
+## Install / run
+
+With Nix flakes, run it straight from GitHub (nothing to clone, no Rust needed):
+
+```sh
+# run once against a directory
+nix run github:ervan0707/cleard -- ~/code
+
+# run the current directory
+nix run github:ervan0707/cleard
+
+# pin a tag/branch/commit
+nix run github:ervan0707/cleard/v0.1.0 -- ~/code
+```
+
+Install it into your profile:
+
+```sh
+nix profile install github:ervan0707/cleard
+cleard ~/code
+```
+
+Or add it to your own flake:
+
+```nix
+{
+  inputs.cleard.url = "github:ervan0707/cleard";
+  # then use cleard.packages.${system}.default in your outputs
+}
+```
+
+Don't have Nix? Build from source with Cargo:
+
+```sh
+git clone https://github.com/ervan0707/cleard
+cd cleard
+cargo build --release   # binary at ./target/release/cleard
+```
+
 ## Usage
 
 ```sh

@@ -44,7 +44,7 @@
         packages.default = cleard;
         packages.cleard = cleard;
 
-        # `nix run github:<user>/cleard`
+        # `nix run github:ervan0707/cleard`
         apps.default = flake-utils.lib.mkApp { drv = cleard; };
 
         devShells.default = pkgs.mkShell {

@@ -5,6 +5,25 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-23 — Point repo URLs at ervan0707/cleard, document running from Git
+
+### What
+
+Set the real repo (`https://github.com/ervan0707/cleard`) everywhere there was a
+placeholder (`Cargo.toml` `repository`, the flake comment, a DEVLOG line) and
+added an "Install / run" section to the README showing how to run/install
+straight from GitHub via Nix flakes.
+
+### Why / how
+
+`nix run github:ervan0707/cleard` builds and runs the flake straight from the
+repo with no clone and no local Rust, which is the main distribution story. The
+README now covers `nix run` (with a pinned tag form), `nix profile install`,
+adding it as a flake input, and a Cargo fallback for non-Nix users. Docs +
+metadata only, no code change.
+
+---
+
 ## 2026-06-23 — Security review hardening
 
 ### What
@@ -143,7 +162,7 @@ Shipped in this pass:
 - **Rust.** A disk scanner lives or dies on fast parallel directory walking,
   and a single static binary is easy to hand out. Confirmed with the user.
 - **Nix flake for dev + distribution.** User asked for it. Gives a reproducible
-  toolchain and `nix run github:<user>/cleard` with no local Rust needed.
+  toolchain and `nix run github:ervan0707/cleard` with no local Rust needed.
 - **Marker-aware detection (not plain name matching).** The real danger in a
   multi-ecosystem cleaner is nuking a folder that looks like an artifact but is
   actually source (a hand-written `build/` or `dist/`). So an ambiguous dir is
