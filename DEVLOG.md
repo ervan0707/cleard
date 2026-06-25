@@ -5,6 +5,37 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-25 — Shrink the installed closure from ~2.8 GB to ~46 MiB
+
+### What
+
+Added a `postInstall` step to the flake's package that runs
+`remove-references-to -t ${rustToolchain}` over `$out/bin/cleard`. The runtime
+closure dropped from 2.79 GB to 45.6 MiB (the remainder is `libiconv`, which
+every Darwin binary links).
+
+### Why
+
+`nix profile install` was pulling ~2 GB into the store for a 1.6 MB binary.
+The binary's only direct reference was the entire Rust toolchain
+(`rust-default`), which transitively drags in LLVM and cctools/binutils-darwin
+(~1.3 GB on its own). Nobody actually needs the toolchain at runtime — it was
+being retained purely by accident.
+
+### How
+
+The reference wasn't an rpath or a linked dylib (`otool -l` showed none). It was
+33 plain string constants in the binary: Rust's panic/backtrace source-location
+paths for `std`/`core`/`alloc`, e.g.
+`…-rust-default-…/lib/rustlib/src/rust/library/std/src/io/mod.rs`. rust-overlay
+keeps the std source tree inside the toolchain's store path, the precompiled std
+bakes those paths in, and Nix's scanner sees the store hash and treats the whole
+toolchain as a dependency. The strings are diagnostic only — nothing reads those
+files at runtime — so `remove-references-to` nulls out the hash in place and the
+dependency disappears. Verified the binary still runs (`cleard --version`) after
+scrubbing. Gotcha: this is `nativeBuildInputs = [ pkgs.removeReferencesTo ]`
+(camelCase attr) providing the `remove-references-to` binary (hyphenated).
+
 ## 2026-06-23 — Show selected total, stop cursor auto-advancing on select
 
 ### What

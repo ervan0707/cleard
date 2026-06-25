@@ -32,6 +32,17 @@
           version = "0.1.0";
           src = ./.;
           cargoLock.lockFile = ./Cargo.lock;
+
+          # The compiled std bakes its source paths (panic/backtrace location
+          # strings) into the binary. rust-overlay keeps that source tree inside
+          # the toolchain's store path, so those strings make Nix treat the whole
+          # toolchain (rustc + LLVM + cctools, ~2 GB) as a runtime dependency.
+          # The strings are diagnostic only — nothing reads them at runtime — so
+          # scrub the reference out of the final binary to keep the closure tiny.
+          nativeBuildInputs = [ pkgs.removeReferencesTo ];
+          postInstall = ''
+            remove-references-to -t ${rustToolchain} "$out/bin/cleard"
+          '';
           # Pure scanner: no system libs needed beyond libc.
           meta = with pkgs.lib; {
             description = "Interactive, multi-ecosystem build-artifact disk reclaimer";
