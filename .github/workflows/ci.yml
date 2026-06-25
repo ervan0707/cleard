@@ -7,8 +7,20 @@ on:
 
 jobs:
   build-test-audit:
-    name: build, test, audit
-    runs-on: ubuntu-latest
+    name: build, test, audit (${{ matrix.system }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            system: x86_64-linux
+          - os: ubuntu-24.04-arm
+            system: aarch64-linux
+          - os: macos-13
+            system: x86_64-darwin
+          - os: macos-14
+            system: aarch64-darwin
     steps:
       - uses: actions/checkout@v4
 
@@ -25,7 +37,9 @@ jobs:
           name: skinnyvans
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-      # Build the flake package (a real store path) so it gets pushed to Cachix.
+      # Each runner builds its native system, so the matrix covers every system
+      # the flake defines. `nix build` produces a real store path, which is what
+      # cachix-action pushes.
       - name: Build package
         run: nix build --print-build-logs
 

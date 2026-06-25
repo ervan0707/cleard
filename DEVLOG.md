@@ -5,6 +5,34 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-25 — Build + cache all four systems via a CI matrix
+
+### What
+
+Turned the single-runner CI job into a matrix so every system the flake defines
+gets built and pushed to Cachix:
+
+- `ubuntu-latest` -> `x86_64-linux`
+- `ubuntu-24.04-arm` -> `aarch64-linux`
+- `macos-13` -> `x86_64-darwin`
+- `macos-14` -> `aarch64-darwin`
+
+### Why
+
+The previous job ran only on `ubuntu-latest`, so `nix build` only realised
+`x86_64-linux` and that was the sole system landing in the cache. Mac and ARM
+users still compiled from source. Each platform needs a real runner (no
+cross-compile set up here), so a matrix is the way to cover all four.
+
+### How
+
+`nix build` builds the runner's native system, so each matrix leg covers one
+system with no extra flags. `fail-fast: false` so one platform breaking doesn't
+cancel the others. Test and audit run on every leg too (the filesystem walk is
+worth testing per-platform; the audit is redundant across legs but cheap).
+
+---
+
 ## 2026-06-25 — Publish builds to a Cachix binary cache
 
 ### What
