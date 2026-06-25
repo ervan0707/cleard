@@ -5,6 +5,43 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-25 — Publish builds to a Cachix binary cache
+
+### What
+
+Wired the flake up to the `skinnyvans` Cachix cache so users can download the
+prebuilt `cleard` binary instead of compiling Rust from source.
+
+- `flake.nix`: added `nixConfig.extra-substituters` /
+  `extra-trusted-public-keys` pointing at `skinnyvans.cachix.org`.
+- `.github/workflows/ci.yml`: added the `cachix/cachix-action` step (pulls +
+  pushes, authed via the `CACHIX_AUTH_TOKEN` repo secret) and switched the build
+  step from `nix develop -c cargo build` to `nix build`.
+- `README.md`: added a "Binary cache" section documenting `cachix use skinnyvans`
+  and the manual substituter/key config.
+
+### Why
+
+Compiling the Rust toolchain build from scratch is slow for anyone running
+`nix run github:ervan0707/cleard`. A shared cache makes first run a download.
+Also retired `magic-nix-cache-action` — Determinate Systems shut that service
+down in Feb 2025, so it was effectively dead weight in CI.
+
+### How
+
+`cachix-action` uploads every store path realised during the job. The old CI
+built inside the dev shell (`cargo build` → `./target`), which produces no Nix
+store output, so nothing cacheable was created — `nix build` produces the actual
+flake package derivation, which is what gets pushed. Tests/audit still run in the
+dev shell. The `nixConfig` substituter only auto-applies for trusted users;
+others run `cachix use skinnyvans` (documented in the README).
+
+Out-of-repo setup (done on cachix.org / GitHub, not in this commit): the
+`skinnyvans` cache exists and a `CACHIX_AUTH_TOKEN` secret must be added under
+the repo's Actions secrets for pushes to succeed.
+
+---
+
 ## 2026-06-25 — Shrink the installed closure from ~2.8 GB to ~46 MiB
 
 ### What

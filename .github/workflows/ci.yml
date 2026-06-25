@@ -15,11 +15,19 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
 
-      - name: Cache Nix store
-        uses: DeterminateSystems/magic-nix-cache-action@main
+      # Pulls from and pushes to the Cachix cache. Anything realised during the
+      # job (notably `nix build` below) is uploaded so users and later CI runs
+      # download the prebuilt binary instead of recompiling. Replaces the
+      # now-defunct magic-nix-cache (shut down by Determinate Systems Feb 2025).
+      - name: Set up Cachix
+        uses: cachix/cachix-action@v15
+        with:
+          name: skinnyvans
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-      - name: Build
-        run: nix develop -c cargo build --locked
+      # Build the flake package (a real store path) so it gets pushed to Cachix.
+      - name: Build package
+        run: nix build --print-build-logs
 
       - name: Test
         run: nix develop -c cargo test --locked

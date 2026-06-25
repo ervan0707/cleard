@@ -1,6 +1,16 @@
 {
   description = "cleard — a multi-ecosystem disk reclaimer (npkill, but for everything)";
 
+  # Pull prebuilt outputs from the project's Cachix cache instead of compiling
+  # Rust from source. Nix only honours these automatically for trusted users;
+  # everyone else can opt in with `cachix use skinnyvans` (see the README).
+  nixConfig = {
+    extra-substituters = [ "https://skinnyvans.cachix.org" ];
+    extra-trusted-public-keys = [
+      "skinnyvans.cachix.org-1:sgaZPgRhzsU4YScjc2U5Imc+4E3y9Ov/G/q8p/csX+o="
+    ];
+  };
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";

@@ -48,6 +48,24 @@ nix profile install github:ervan0707/cleard
 cleard ~/code
 ```
 
+### Binary cache (skip the build)
+
+CI publishes prebuilt outputs to [Cachix](https://www.cachix.org), so you can
+download the binary instead of compiling Rust. The flake advertises the cache
+via `nixConfig`, which Nix uses automatically if you're a trusted user.
+Otherwise, opt in once:
+
+```sh
+cachix use skinnyvans
+```
+
+Or add it to your Nix config by hand:
+
+```
+substituters = https://skinnyvans.cachix.org
+trusted-public-keys = skinnyvans.cachix.org-1:sgaZPgRhzsU4YScjc2U5Imc+4E3y9Ov/G/q8p/csX+o=
+```
+
 Or add it to your own flake:
 
 ```nix
