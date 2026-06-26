@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Semantic Release
         id: semantic
@@ -47,7 +47,7 @@ jobs:
 
       - name: Upload Cargo.toml
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cargo-toml
           path: Cargo.toml
@@ -60,7 +60,7 @@ jobs:
 
       # Upload the modified package.json as an artifact
       - name: Upload package.json artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: package-json
           path: packages/npm/cleard/package.json
@@ -138,10 +138,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Download updated Cargo.toml
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: cargo-toml
           path: .
@@ -171,14 +171,14 @@ jobs:
           Compress-Archive -Path "binary-dist\${{ matrix.build.ASSET_NAME }}.exe" -DestinationPath "binary-dist\${{ matrix.build.ASSET_NAME }}.zip"
 
       - name: Upload Platform Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.build.ASSET_NAME }}.${{ matrix.build.ARCHIVE_EXT }}
           path: binary-dist/${{ matrix.build.ASSET_NAME }}.${{ matrix.build.ARCHIVE_EXT }}
           retention-days: 1
 
       - name: Upload Python Wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: wheels-${{ matrix.build.NAME }}
           path: dist
@@ -195,7 +195,7 @@ jobs:
           }' > build-info/build-info.json
 
       - name: Upload Build Info
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: build-info-${{ matrix.build.NAME }}
           path: build-info/build-info.json
@@ -206,9 +206,9 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.release_created == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Download updated Cargo.toml
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: cargo-toml
           path: .
@@ -218,7 +218,7 @@ jobs:
           command: sdist
           args: --out dist
       - name: Upload sdist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: wheels-sdist
           path: dist
@@ -237,8 +237,8 @@ jobs:
       # Used to generate artifact attestation
       attestations: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
@@ -262,24 +262,24 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
 
       # Download platform artifacts and build info
       - name: Download Platform Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: cleard-*
           path: binary-dist
           merge-multiple: true
 
       - name: Download build info
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: build-info-*
           path: build-info
@@ -381,10 +381,10 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download updated Cargo.toml
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: cargo-toml
           path: .
@@ -404,11 +404,11 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Download the modified package.json
       - name: Download package.json artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: package-json
           path: packages/npm/cleard/
@@ -420,7 +420,7 @@ jobs:
         run: mkdir -p binary-dist
 
       - name: Download Platform Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: cleard-*
           path: binary-dist

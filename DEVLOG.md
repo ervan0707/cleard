@@ -5,6 +5,29 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-26 — CI: bump actions to v5 (Node 20 deprecation)
+
+### What
+
+- Bumped all first-party GitHub Actions to their v5 majors across
+  `ci.yml` and `release.yml`: `checkout` (v3/v4 → v5), `upload-artifact`,
+  `download-artifact`, and `setup-node` (all v4 → v5).
+
+### Why
+
+CI logged: "Node.js 20 is deprecated. The following actions target Node.js 20
+but are being forced to run on Node.js 24". The v4 actions ship a Node 20
+runtime that GitHub is retiring (see the 2025-09-19 changelog). The v5 majors
+run on Node 24, which clears the warning.
+
+### How
+
+Plain version bump, no config changes. v4 → v5 for these actions is a runtime
+swap (Node 20 → 24), not a behavior change, so nothing else needed updating.
+Also caught a stray `checkout@v3` in release.yml and brought it along.
+
+---
+
 ## 2026-06-26 — CI: macos-13 → macos-15-intel (retired runner)
 
 ### What

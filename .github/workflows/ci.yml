@@ -22,7 +22,7 @@ jobs:
           - os: macos-14
             system: aarch64-darwin
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
