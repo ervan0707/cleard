@@ -1,5 +1,12 @@
 # cleard
 
+[![crates.io](https://img.shields.io/crates/v/cleard?logo=rust&label=crates.io)](https://crates.io/crates/cleard)
+[![npm](https://img.shields.io/npm/v/@ervan0707/cleard?logo=npm&label=npm)](https://www.npmjs.com/package/@ervan0707/cleard)
+[![PyPI](https://img.shields.io/pypi/v/cleard?logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/cleard/)
+[![GitHub release](https://img.shields.io/github/v/release/ervan0707/cleard?logo=github&label=release)](https://github.com/ervan0707/cleard/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/ervan0707/cleard/ci.yml?branch=main&logo=githubactions&logoColor=white&label=CI)](https://github.com/ervan0707/cleard/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ervan0707/cleard/blob/main/LICENSE)
+
 `npkill`, but for **everything** — an interactive terminal tool that finds
 regenerable build / dependency / cache directories across many ecosystems and
 lets you delete them to reclaim disk space.

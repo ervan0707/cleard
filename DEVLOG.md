@@ -5,6 +5,27 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-26 — README badges, MIT LICENSE, author email
+
+### What
+
+- Added a row of shields.io badges to the top of the README (crates.io, npm,
+  PyPI, GitHub release, CI, license), each linking to its page.
+- Added a real `LICENSE` file (MIT) — the crate/package metadata declared MIT
+  but no license file existed, which crates.io warns about. The license badge
+  now links to it.
+- Set the author email to `ervanroot@gmail.com` across `Cargo.toml`,
+  `pyproject.toml`, and both npm manifests (`package.json` +
+  `package.json.tmpl`).
+
+### Why / how
+
+`LICENSE` is intentionally not in `Cargo.toml`'s `exclude` list, so it ships in
+the published crate. The version badges read live from each registry, so they
+stay blank until the next release populates them.
+
+---
+
 ## 2026-06-26 — Scope the npm package (1.0.0 release fallout)
 
 ### What

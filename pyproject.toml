@@ -14,7 +14,7 @@ readme = "README.md"
 requires-python = ">=3.7"
 dynamic = ["version"]
 license = { text = "MIT" }
-authors = [{ name = "ervan", email = "ervan@softwareseni.com" }]
+authors = [{ name = "ervan", email = "ervanroot@gmail.com" }]
 keywords = ["cli", "tui", "disk", "cleanup", "node_modules"]
 classifiers = [
     "Development Status :: 4 - Beta",
