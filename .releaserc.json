@@ -1,0 +1,52 @@
+{
+  "branches": [
+    "main"
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "perl -i -pe \"s/(\\\\\\\"cleard-[^\\\\\\\"]+\\\\\\\": *)?\\\\\\\"?\\\\*\\\\\\\"?/\\1\\\\\\\"${nextRelease.version}\\\\\\\"/g\" packages/npm/cleard/package.json"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "packages/npm/cleard"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          { "path": "cleard-linux-x86_64.tar.gz", "label": "Linux x86_64 binary" },
+          { "path": "cleard-linux-arm64.tar.gz", "label": "Linux ARM64 binary" },
+          { "path": "cleard-darwin-x86_64.tar.gz", "label": "macOS x86_64 binary" },
+          { "path": "cleard-darwin-arm64.tar.gz", "label": "macOS ARM64 binary" },
+          { "path": "cleard-windows-x86_64.zip", "label": "Windows x86_64 binary" },
+          { "path": "cleard-windows-arm64.zip", "label": "Windows ARM64 binary" }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "sed -i.bak -E 's/^version = \"[^\"]+\"$/version = \"${nextRelease.version}\"/' Cargo.toml"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "CHANGELOG.md",
+          "Cargo.toml",
+          "packages/npm/cleard/package.json"
+        ],
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
+      }
+    ]
+  ]
+}

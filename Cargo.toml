@@ -4,11 +4,31 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.90"
 description = "Interactive, multi-ecosystem build-artifact disk reclaimer (npkill, but for everything)"
+authors = ["ervan <ervan@softwareseni.com>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/ervan0707/cleard"
+documentation = "https://github.com/ervan0707/cleard#readme"
+homepage = "https://github.com/ervan0707/cleard"
 keywords = ["cli", "tui", "disk", "cleanup", "node_modules"]
 categories = ["command-line-utilities", "filesystem"]
+# Keep packaging/CI/dev cruft out of the published crate so it stays lean.
+# crates.io users only need the Rust source; everything else is delivery
+# machinery for the other channels (npm/PyPI/GitHub/Nix).
+exclude = [
+    ".github/*",
+    ".gitignore",
+    ".envrc",
+    "packages/*",
+    "flake.nix",
+    "flake.lock",
+    ".direnv/*",
+    "install.sh",
+    "pyproject.toml",
+    "RELEASE-STRATEGY.md",
+    "DEVLOG.md",
+    "CLAUDE.md",
+]
 
 [[bin]]
 name = "cleard"

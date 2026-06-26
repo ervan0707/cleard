@@ -5,6 +5,61 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-26 — Multi-registry release pipeline (npm, PyPI, crates.io, GitHub)
+
+### What
+
+Implemented the release strategy in `RELEASE-STRATEGY.md`: one push of a
+Conventional-Commit `feat:`/`fix:` to `main` now versions and publishes `cleard`
+to **four** targets at once — crates.io, npm, PyPI, and GitHub Releases — on top
+of the existing Nix/Cachix channel.
+
+New files:
+
+- `.releaserc.json` — semantic-release config; commit-analyzer is the single
+  version authority, then exec/npm/github/git plugins stamp + publish + tag.
+- `.github/workflows/release.yml` — the pipeline: a dry-run `prepare` gate, a
+  6-target build matrix (maturin builds both the binary and the Python wheel),
+  parallel best-effort publishers, then the real semantic-release run.
+- `pyproject.toml` — maturin with `bindings = "bin"` so `pip install` ships the
+  binary, not a Python module; `dynamic = ["version"]` reads it from Cargo.toml.
+- `packages/npm/` — the `optionalDependencies` + `os`/`cpu` pattern: a main
+  `cleard` package with a JS shim (`lib/index.js`) that execs the right
+  per-platform sub-package, plus `package.json.tmpl` for the 6 sub-packages.
+- `install.sh` — `curl | bash` installer pulling the matching GitHub Release
+  asset.
+
+Changed `Cargo.toml`: added `authors`/`homepage`/`documentation` and an
+`exclude` list so the published crate drops all the CI/packaging cruft. Updated
+the README with the five install commands.
+
+### Why
+
+Meet users in whatever ecosystem they already live in, while compiling from
+source only on crates.io — npm/PyPI/curl are thin wrappers over the same
+prebuilt binary. Versioning is fully automated from commit messages so all
+channels always publish the identical version with no hand-bumping.
+
+### How / gotchas
+
+- The version is computed **once** by the dry-run gate and threaded to every job
+  as artifacts (stamped `Cargo.toml` + `package.json`), never recomputed — no
+  drift between registries. The real tag/commit happens last, so a failed build
+  never leaves a dangling tag.
+- Keep the **`x64` (npm) vs `x86_64` (release asset)** naming split intact — the
+  workflow translates between them; the shim uses Node's `process.arch` (`x64`).
+- The `.releaserc.json` first `exec` perl command is copied verbatim from the
+  strategy (heavy quote escaping) — only `APP`→`cleard` was swapped.
+- Nix is untouched and stays separate: `flake.nix`/`flake.lock` are in the
+  crate's `exclude` list, and the existing `ci.yml` (Cachix) is a distinct
+  workflow from `release.yml`.
+- **Out-of-repo TODO before the first release** (can't be done from here):
+  reserve the names on crates.io / npm (incl. all 6 `cleard-<os>-<arch>`
+  sub-packages) / PyPI, and add the 4 GitHub secrets: `NPM_TOKEN`,
+  `PYPI_API_TOKEN`, `CRATES_IO_TOKEN` (`GITHUB_TOKEN` is automatic).
+
+---
+
 ## 2026-06-25 — Build + cache all four systems via a CI matrix
 
 ### What

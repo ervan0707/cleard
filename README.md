@@ -26,7 +26,21 @@ Go & PHP (`vendor`), .NET (`bin`, `obj`), CocoaPods (`Pods`), Terraform
 (`.terraform`), Elixir (`_build`, `deps`), Elm (`elm-stuff`), Dart/Flutter
 (`.dart_tool`). Extendable via config.
 
-## Install / run
+## Install
+
+`cleard` ships one binary through whichever ecosystem you already use — npm,
+PyPI, and the `curl` script all deliver the same prebuilt binary; Cargo and Nix
+build from source.
+
+```sh
+cargo install cleard                       # crates.io (compiles from source)
+npm install -g cleard                      # prebuilt binary via npm
+pip install cleard                         # prebuilt binary in a Python wheel
+curl -fsSL https://raw.githubusercontent.com/ervan0707/cleard/main/install.sh | bash
+nix profile install github:ervan0707/cleard
+```
+
+## Run
 
 With Nix flakes, run it straight from GitHub (nothing to clone, no Rust needed):
 
