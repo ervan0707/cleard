@@ -5,6 +5,55 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-26 — CI: macos-13 → macos-15-intel (retired runner)
+
+### What
+
+- Swapped the `x86_64-darwin` matrix entry's runner from `macos-13` to
+  `macos-15-intel` in `.github/workflows/ci.yml`.
+
+### Why
+
+The `build, test, audit (x86_64-darwin)` job hung indefinitely on "Waiting for a
+runner to pick up this job…". The `macos-13` (Intel) GitHub-hosted runner image
+was fully retired on 2025-12-04, so nothing ever claims the `macos-13` label.
+`macos-15-intel` is GitHub's current Intel x86_64 macOS runner, so it keeps the
+x86_64-darwin coverage on real Intel hardware.
+
+### How
+
+One-line label change; the Nix `system` stays `x86_64-darwin` because
+`macos-15-intel` is still Intel. `macos-14` (aarch64-darwin) is left as-is — it's
+still supported, though worth bumping to `macos-15`/`macos-latest` eventually.
+
+---
+
+## 2026-06-26 — drop nixConfig substituter (fixes direnv hang)
+
+### What
+
+- Removed the `nixConfig.extra-substituters` / `extra-trusted-public-keys` block
+  from `flake.nix`. Replaced it with a comment explaining why and pointing at
+  `cachix use skinnyvans`.
+
+### Why
+
+Entering the project dir under nix-direnv hung on:
+`do you want to allow configuration setting 'extra-substituters' to be set to
+'https://skinnyvans.cachix.org' (y/N)?`. A flake setting a binary cache is
+untrusted input, so Nix prompts every non-trusted user for consent. direnv runs
+the evaluation with no TTY, so that prompt blocks forever. The block also gave
+untrusted users nothing — they were already told to run `cachix use`.
+
+### How
+
+The cache opt-in now lives entirely on the user side: `cachix use skinnyvans`
+writes the substituter + key into the user's trusted nix.conf, so no flake-level
+prompt is ever triggered. Trusted users who want it can add it to their own
+nix.conf too. No functional change to builds — only the cache hint moved.
+
+---
+
 ## 2026-06-26 — README badges, MIT LICENSE, author email
 
 ### What
