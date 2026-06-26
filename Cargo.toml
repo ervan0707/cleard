@@ -1,6 +1,6 @@
 [package]
 name = "cleard"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 rust-version = "1.90"
 description = "Interactive, multi-ecosystem build-artifact disk reclaimer (npkill, but for everything)"

@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/ervan0707/cleard/compare/v1.0.2...v1.0.3) (2026-06-26)
+
+
+### Bug Fixes
+
+* **ci:** sync Cargo.lock with 1.0.2 version bump ([60e3835](https://github.com/ervan0707/cleard/commit/60e38356ff3d029081bf90969f5a365a49c6375f))
+* **release:** regenerate and commit Cargo.lock on version bump ([e50bff7](https://github.com/ervan0707/cleard/commit/e50bff792ccb757b329be2a6e072d90d61199551))
+
 ## [1.0.2](https://github.com/ervan0707/cleard/compare/v1.0.1...v1.0.2) (2026-06-26)
 
 
