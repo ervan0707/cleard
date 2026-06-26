@@ -5,6 +5,30 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-26 — Fix: sync Cargo.lock with the 1.0.2 version bump
+
+### What
+
+- Committed the regenerated `Cargo.lock` so the `cleard` package entry reads
+  `1.0.2`, matching `Cargo.toml`.
+
+### Why
+
+- The `chore(release)` commits (1.0.1, 1.0.2) bumped the version in
+  `Cargo.toml` but never committed the corresponding `Cargo.lock` change, so
+  the committed lockfile still pinned `cleard` at `0.1.0`. CI builds with
+  `--locked`, which refuses to silently update the lockfile and fails with
+  "the lock file needs to be updated but --locked was passed".
+
+### How
+
+- The fix was already sitting in the working tree (a one-line lockfile diff);
+  just staged and committed it. To avoid this recurring, the release flow
+  should run `cargo build`/`cargo update -p cleard` and stage `Cargo.lock`
+  alongside the `Cargo.toml` bump.
+
+---
+
 ## 2026-06-26 — CI: bump actions to v5 (Node 20 deprecation)
 
 ### What
