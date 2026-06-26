@@ -5,6 +5,46 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-26 — Release: harden against partial multi-registry publishes
+
+### What
+
+- `release.yml`: removed `continue-on-error: true` from all three publish jobs
+  (PyPI, npm, crates.io); added a top-level `concurrency` group so only one
+  release runs at a time; made the npm and crates.io publishes idempotent.
+- New `republish.yml`: a manual `workflow_dispatch` to rebuild from an existing
+  tag and re-push to a chosen registry (crates-io / npm / pypi / all).
+
+### Why
+
+- The publish jobs were best-effort (`continue-on-error`) but the final
+  `release` job (which cuts the tag, GitHub Release, and version-bump commit)
+  ran regardless. So if e.g. PyPI succeeded and crates.io failed, the version
+  got burned (tag created) with one registry missing, the pipeline still went
+  green, and there was no way to retry through the normal flow. That's the
+  exact "one registry succeeds, another fails" trap.
+- With `continue-on-error` gone, a failed publish now blocks the tag, so the
+  version isn't burned and the run can be retried. Retry only works if the
+  publishes are idempotent, hence the npm/cargo guards. `concurrency` stops two
+  pushes from racing the tag and the two semantic-release runs from computing
+  different versions.
+
+### How
+
+- npm: guard each `npm publish` with `npm view "$pkg@$ver"` so a re-run skips
+  what's already up (PyPI already had `--skip-existing`).
+- cargo: capture `cargo publish` output and treat an "already uploaded" error
+  as success; any other error still fails.
+- `republish.yml` deliberately mirrors release.yml's build matrix and packaging
+  (kept a NOTE in the header to keep them in sync). It checks out the tag,
+  derives the npm version from the tag (strips leading `v`), and also covers the
+  `cleard` npm meta-package, which the normal flow publishes via semantic-release.
+- Note: this hardens the three registry jobs. It does not change
+  semantic-release's own internal plugin ordering (npm meta + git tag + GitHub
+  Release happen inside one semantic-release run); that's a separate concern.
+
+---
+
 ## 2026-06-26 — Fix: sync Cargo.lock with the 1.0.2 version bump
 
 ### What
