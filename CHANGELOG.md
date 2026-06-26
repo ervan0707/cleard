@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/ervan0707/cleard/compare/v1.0.1...v1.0.2) (2026-06-26)
+
+
+### Bug Fixes
+
+* **ci:** unstick direnv shell and x86_64-darwin CI runner ([dff86e6](https://github.com/ervan0707/cleard/commit/dff86e624ea6b4a27f49c80123d475c215d518f0))
+
 ## [1.0.1](https://github.com/ervan0707/cleard/compare/v1.0.0...v1.0.1) (2026-06-26)
 
 
