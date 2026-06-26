@@ -34,7 +34,7 @@ build from source.
 
 ```sh
 cargo install cleard                       # crates.io (compiles from source)
-npm install -g cleard                      # prebuilt binary via npm
+npm install -g @ervan0707/cleard           # prebuilt binary via npm
 pip install cleard                         # prebuilt binary in a Python wheel
 curl -fsSL https://raw.githubusercontent.com/ervan0707/cleard/main/install.sh | bash
 nix profile install github:ervan0707/cleard

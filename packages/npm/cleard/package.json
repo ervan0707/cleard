@@ -1,9 +1,10 @@
 {
-  "name": "cleard",
+  "name": "@ervan0707/cleard",
   "version": "1.0.0",
   "description": "Interactive, multi-ecosystem build-artifact disk reclaimer (npkill, but for everything)",
-  "bin": "lib/index.js",
+  "bin": { "cleard": "lib/index.js" },
   "private": false,
+  "publishConfig": { "access": "public" },
   "keywords": [
     "cli",
     "tui",

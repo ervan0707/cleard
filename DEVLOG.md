@@ -5,6 +5,45 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 
 ---
 
+## 2026-06-26 — Scope the npm package (1.0.0 release fallout)
+
+### What
+
+The first 1.0.0 run published crates.io, PyPI, and the six npm platform
+sub-packages, but the **main npm package failed**: npm rejects the bare name
+`cleard` as "too similar to existing package `clear`" (typosquat protection).
+Renamed the main package to the scoped **`@ervan0707/cleard`** and added
+`publishConfig.access = "public"`. Install is now `npm i -g @ervan0707/cleard`;
+the binary it puts on PATH is still `cleard`.
+
+Also changed `"bin"` from the string form to `{ "cleard": "lib/index.js" }`.
+
+### Why
+
+- Scoped names skip npm's similarity check, so `@ervan0707/cleard` is guaranteed
+  to publish where `cleard` can't.
+- For a scoped package the string `bin` form would name the command after the
+  package (`@ervan0707/cleard`), which isn't a valid command. The object form
+  pins the command name to `cleard` (this also clears the "bin was converted to
+  an object" npm warning).
+
+### How / fallout to know about
+
+semantic-release creates and pushes the git tag *before* the publish plugins
+run, so even though the npm step failed, `v1.0.0` + the `chore(release): 1.0.0`
+commit landed on `main`, and crates.io/PyPI/sub-packages are at 1.0.0. But the
+`@semantic-release/github` step runs *after* npm, so **no GitHub Release (and no
+binaries) was created for 1.0.0**, which also leaves the `curl | bash` installer
+broken (it reads the latest release).
+
+Fix path: this rename ships as a `fix:` commit, so the next push cuts a clean
+**1.0.1** across every channel and creates the GitHub Release + binaries that
+1.0.0 never got. The 1.0.0 artifacts on crates.io/PyPI are immutable but
+harmless; users just land on 1.0.1. The orphan `v1.0.0` tag (no release
+attached) can be left as-is or deleted.
+
+---
+
 ## 2026-06-26 — Multi-registry release pipeline (npm, PyPI, crates.io, GitHub)
 
 ### What
