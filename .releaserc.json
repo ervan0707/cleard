@@ -34,7 +34,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "sed -i.bak -E 's/^version = \"[^\"]+\"$/version = \"${nextRelease.version}\"/' Cargo.toml"
+        "prepareCmd": "sed -i.bak -E 's/^version = \"[^\"]+\"$/version = \"${nextRelease.version}\"/' Cargo.toml && cargo update -p cleard"
       }
     ],
     [
@@ -43,6 +43,7 @@
         "assets": [
           "CHANGELOG.md",
           "Cargo.toml",
+          "Cargo.lock",
           "packages/npm/cleard/package.json"
         ],
         "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"

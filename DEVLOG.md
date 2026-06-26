@@ -23,9 +23,13 @@ go on top. Update this every time the project changes (see CLAUDE.md).
 ### How
 
 - The fix was already sitting in the working tree (a one-line lockfile diff);
-  just staged and committed it. To avoid this recurring, the release flow
-  should run `cargo build`/`cargo update -p cleard` and stage `Cargo.lock`
-  alongside the `Cargo.toml` bump.
+  just staged and committed it.
+- Then closed the loop in `.releaserc.json` so it can't recur: the
+  `@semantic-release/exec` prepareCmd now runs `cargo update -p cleard` right
+  after the `Cargo.toml` `sed`, and `Cargo.lock` was added to the
+  `@semantic-release/git` `assets` so the refreshed lockfile is committed with
+  the release. Without both, the next version bump would desync the lockfile
+  again. (GitHub-hosted ubuntu runners ship cargo, so the prepareCmd has it.)
 
 ---
 
