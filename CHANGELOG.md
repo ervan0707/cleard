@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/ervan0707/cleard/compare/v1.0.0...v1.0.1) (2026-06-26)
+
+
+### Bug Fixes
+
+* **npm:** scope main package as @ervan0707/cleard ([1dbba97](https://github.com/ervan0707/cleard/commit/1dbba97ff8df5a2aaf0ac8cdc4b809dfcfe787b8))
+
 # 1.0.0 (2026-06-26)
 
 

@@ -1,10 +1,14 @@
 {
   "name": "@ervan0707/cleard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Interactive, multi-ecosystem build-artifact disk reclaimer (npkill, but for everything)",
-  "bin": { "cleard": "lib/index.js" },
+  "bin": {
+    "cleard": "lib/index.js"
+  },
   "private": false,
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "cli",
     "tui",
@@ -23,11 +27,11 @@
   },
   "homepage": "https://github.com/ervan0707/cleard#readme",
   "optionalDependencies": {
-    "cleard-linux-x64": "1.0.0",
-    "cleard-linux-arm64": "1.0.0",
-    "cleard-darwin-x64": "1.0.0",
-    "cleard-darwin-arm64": "1.0.0",
-    "cleard-windows-x64": "1.0.0",
-    "cleard-windows-arm64": "1.0.0"
+    "cleard-linux-x64": "1.0.1",
+    "cleard-linux-arm64": "1.0.1",
+    "cleard-darwin-x64": "1.0.1",
+    "cleard-darwin-arm64": "1.0.1",
+    "cleard-windows-x64": "1.0.1",
+    "cleard-windows-arm64": "1.0.1"
   }
 }
